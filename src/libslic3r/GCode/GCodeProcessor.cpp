@@ -651,7 +651,8 @@ void GCodeProcessor::TimeMachine::calculate_time(GCodeProcessorResult& result, P
         if (block.flags.prepare_stage)
             prepare_time += block_time;
 
-        if (block.layer_id == 1)
+        // Orca: exclude start G-code (prepare stage) from the first layer time
+        if (block.layer_id == 1 && !block.flags.prepare_stage)
             first_layer_time += block_time;
 
         // detect actual speed moves required to render toolpaths using actual speed
@@ -1320,7 +1321,7 @@ void GCodeProcessor::run_post_process()
                         char buf[128];
                         sprintf(buf, "; estimated first layer printing time (%s mode) = %s\n",
                                 (mode == PrintEstimatedStatistics::ETimeMode::Normal) ? "normal" : "silent",
-                                get_time_dhms(machine.prepare_time).c_str());
+                                get_time_dhms(machine.first_layer_time).c_str());
                         export_line.append_line(buf);
                         processed = true;
                     }
